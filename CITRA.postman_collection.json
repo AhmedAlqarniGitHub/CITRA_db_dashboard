@@ -1,0 +1,189 @@
+{
+	"info": {
+		"_postman_id": "e10c5c80-5f37-4690-a677-b7b01f41ba30",
+		"name": "CITRA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4916043"
+	},
+	"item": [
+		{
+			"name": "register-user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"johndoe@example.com\",\n  \"password\": \"securepassword123\",\n  \"role\": \"attendee\",\n  \"description\": \"A brief description about John Doe.\",\n  \"age\": 28\n}\n\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/users/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/users/get-user/65cfabfb8a8969840d31b974",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users",
+						"get-user",
+						"65cfabfb8a8969840d31b974"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "get-user",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "register-event",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "update-event",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Tech Conference 2024 - Updated\",\n  \"location\": \"Grand Hotel Ballroom, Downtown\",\n  \"description\": \"Updated description for the annual tech conference.\",\n  \"startingDate\": \"2024-05-16T09:00:00Z\",\n  \"endingDate\": \"2024-05-18T17:00:00Z\",\n  \"organizer\": \"65d2594486030f8decf98e70\" \n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/events/update/65d259f7d94d1001da2bf3d9",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"events",
+						"update",
+						"65d259f7d94d1001da2bf3d9"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "emotions",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "add-camera",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"manufacturer\": \"Canon\",\n  \"model\": \"EOS 5D Mark IV\",\n  \"resolution\": \"30.4MP\",\n  \"ip\": \"192.168.1.2\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/cameras/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"cameras",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete-camera",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "update-camera",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"manufacturer\": \"Your Manufacturer\",\n  \"name\": \"Camera Name\",\n    \"model\": \"D3500\",\n  \"supportedQuality\": \"1080p\",\n  \"framesPerSecond\": 30\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/cameras/update/65d262ede3f06e8b1493daf1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"cameras",
+						"update",
+						"65d262ede3f06e8b1493daf1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
