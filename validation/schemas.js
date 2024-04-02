@@ -21,7 +21,8 @@ const eventValidationSchema = {
     startingDate: { type: 'string', format: 'date-time' },
     endingDate: { type: 'string', format: 'date-time' },
     description: { type: 'string' },
-    organizer: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' } // Assuming MongoDB ObjectId pattern
+    organizer: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },// Assuming MongoDB ObjectId pattern
+    status:{ type: 'string' }
   },
   required: ['name', 'location', 'startingDate', 'endingDate', 'organizer'],
   additionalProperties: false

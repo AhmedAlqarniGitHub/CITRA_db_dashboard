@@ -3,6 +3,7 @@ require('./db')
 const userRoutes = require('./routes/users');
 const eventRoutes = require('./routes/events');
 const cameraRoutes = require('./routes/devices');
+const generateRandomEmotion = require('./utils/utils_emotions.js')
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,4 +19,8 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+setTimeout(()=>{
+//generateRandomEmotion() ;
+
+},5000)
 module.exports=app;

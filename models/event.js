@@ -9,8 +9,14 @@ const emotionSchema = new mongoose.Schema({
   detectionTime: {
     type: Date,
     required: true
+  },
+  camera: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Camera',
+    required: true
   }
 });
+
 
 const eventSchema = new mongoose.Schema({
   name: {
@@ -39,6 +45,12 @@ const eventSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: ['active', 'inactive', 'planned'],
+    default: 'active'
   },
   emotions: [emotionSchema],
   cameras: [{

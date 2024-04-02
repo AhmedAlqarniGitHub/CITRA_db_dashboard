@@ -42,5 +42,29 @@ router.post('/emotions/:eventId', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+router.get('/all', async (req, res) => {
+  try {
+    const events = await Event.find({});
+    res.status(200).json(events);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+router.post('/emotions', async (req, res) => {
+  const { eventId, cameraId, detectionTime, detectedEmotion } = req.body;
+
+  try {
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+    event.emotions.push({ camera: cameraId, detectionTime, detectedEmotion });
+    await event.save();
+    res.status(200).json({ message: 'Emotion added successfully', event });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 
 module.exports = router;
