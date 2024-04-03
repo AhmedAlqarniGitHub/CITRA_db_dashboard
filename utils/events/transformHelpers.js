@@ -48,7 +48,7 @@ function transformEventsBarChart(eventsBarChartAggregation) {
 }
 
 function transformEventsTimeline(eventsTimelineAggregation) {
-  return eventsTimelineAggregation
+  let allEvents = eventsTimelineAggregation
     .map((item, index) => {
       const events = [];
       if (item.startTime) {
@@ -69,7 +69,12 @@ function transformEventsTimeline(eventsTimelineAggregation) {
       }
       return events;
     })
-    .flat(); // Flatten the array of arrays into a single array
+    .flat();
+
+  // Sorting allEvents by time in ascending order
+  allEvents.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+  return allEvents;
 }
 
 function getMonthName(monthNumber) {
