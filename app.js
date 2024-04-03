@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require("cors");
 require('./db')
 const userRoutes = require('./routes/users');
 const eventRoutes = require('./routes/events');
@@ -10,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 
 app.use(express.json());
+app.use(cors());
 
 app.use('/users', userRoutes);
 app.use('/events', eventRoutes);
