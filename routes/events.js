@@ -47,12 +47,28 @@ router.patch(
       const event = await Event.findByIdAndUpdate(eventId, req.body, {
         new: true,
       });
+
       res.status(200).json(event);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   }
 );
+
+// Delete Event
+router.delete('/:eventId', async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    const event = await Event.findByIdAndDelete(eventId);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+    res.status(200).json({ message: 'Event deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Record Detected Emotions
 router.post("/emotions/:eventId", async (req, res) => {
