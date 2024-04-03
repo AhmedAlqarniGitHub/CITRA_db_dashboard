@@ -43,4 +43,14 @@ router.patch('/update/:cameraId', validateSchema(cameraValidationSchema), async 
   }
 });
 
+// Add a new route for Camera Summary
+router.get("/summary", async (req, res) => {
+  try {
+    const totalCameras = await Camera.countDocuments();
+    res.status(200).json({ totalCameras });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

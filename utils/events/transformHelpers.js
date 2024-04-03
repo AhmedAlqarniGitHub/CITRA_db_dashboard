@@ -92,12 +92,13 @@ function getMonthName(monthNumber) {
 
 function transformHeatmapData(heatmapAggregation) {
   const categories = [
-    "Happy",
-    "Sad",
-    "Disgusted",
+    "Neutral",
+    "Fearful",
     "Surprised",
-    "Natural",
-    "Fear",
+    "Disgusted",
+    "Sad",
+    "Happy",
+    "Angry",
   ];
   const series = heatmapAggregation.map((event) => {
     let data = categories.map((category) => {

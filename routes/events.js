@@ -133,5 +133,35 @@ router.get("/charts", async (req, res) => {
   }
 });
 
+// Aggregation for Event Summary
+async function getEventSummaryAggregation() {
+  const totalEvents = await Event.countDocuments();
+  const activeEvents = await Event.countDocuments({ status: 'active' });
+
+  // Assuming each event document has an 'emotions' array
+  const totalEmotions = await Event.aggregate([
+    { $unwind: "$emotions" },
+    { $group: { _id: null, count: { $sum: 1 } } },
+    { $project: { _id: 0, count: 1 } }
+  ]);
+
+  const emotionsCount = totalEmotions.length > 0 ? totalEmotions[0].count : 0;
+
+  return {
+    totalEvents,
+    activeEvents,
+    totalEmotions: emotionsCount
+  };
+}
+
+// Add a new route for Event Summary
+router.get("/summary", async (req, res) => {
+  try {
+    const summaryData = await getEventSummaryAggregation();
+    res.status(200).json(summaryData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;
