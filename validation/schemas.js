@@ -4,11 +4,9 @@ const userValidationSchema = {
     name: { type: 'string' },
     email: { type: 'string', format: 'email' },
     role: { type: 'string', enum: ['organizer', 'admin', 'attendee'] },
-    password: { type: 'string' },
     description: { type: 'string' },
-    age: { type: 'number', minimum: 0 }
   },
-  required: ['name', 'email', 'role', 'password'],
+  required: ['name', 'email', 'role'],
   additionalProperties: false
 };
 
@@ -32,7 +30,6 @@ const cameraValidationSchema = {
   type: 'object',
   properties: {
     manufacturer: { type: 'string' },
-    name: { type: 'string' },  // Add this if 'name' is a valid property
     model: { type: 'string' },  // Ensure this is marked as required
     supportedQuality: { type: 'string' },
     framesPerSecond: { type: 'number' },

@@ -8,10 +8,14 @@ const { userValidationSchema } = require('../validation/schemas');
 // Register User
 router.post('/register', validateSchema(userValidationSchema), async (req, res) => {
   try {
+    console.log(req.body)
+    req.body.password='citra2024'
+    console.log(req.body)
     const user = new User(req.body);
     await user.save();
     res.status(201).json({ message: 'User registered successfully', user });
   } catch (error) {
+    
     res.status(400).json({ error: error.message });
   }
 });

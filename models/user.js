@@ -28,6 +28,8 @@ const userSchema = new mongoose.Schema({
   },
   age: {
     type: Number,
+    required: false
+
   },
 }, {
   timestamps: true
