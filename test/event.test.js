@@ -9,8 +9,8 @@ describe('Event Endpoints', function() {
       organizer: '660720849045c0664e4cb45e',
       name: 'Global Tech Summit 2023',
       location: 'San Francisco, CA',
-      startingDate: '2024-05-15T09:00:00Z',
-      endingDate: '2024-05-17T17:00:00Z',
+      startingDate: '2024-01-15T09:00:00Z',
+      endingDate: '2024-12-17T17:00:00Z',
       description: 'A premier technology conference bringing together industry leaders from around the world.',
       status: 'active'
     },
@@ -18,8 +18,8 @@ describe('Event Endpoints', function() {
       organizer: '660720849045c0664e4cb45e',
       name: 'International Design Conference 2023',
       location: 'Berlin, Germany',
-      startingDate: '2024-05-15T09:00:00Z',
-      endingDate: '2024-05-17T17:00:00Z',
+      startingDate: '2024-01-15T09:00:00Z',
+      endingDate: '2024-12-17T17:00:00Z',
       description: 'Explore the future of design with experts from various fields and discover the latest trends.',
       status: 'active'
     },
@@ -27,8 +27,8 @@ describe('Event Endpoints', function() {
       organizer: '660720849045c0664e4cb45e',
       name: 'Health & Wellness Expo 2023',
       location: 'London, UK',
-      startingDate: '2024-05-15T09:00:00Z',
-      endingDate: '2024-05-17T17:00:00Z',
+      startingDate: '2024-01-15T09:00:00Z',
+      endingDate: '2024-12-17T17:00:00Z',
       description: 'Dedicated to showcasing innovations in health, wellness, and nutrition for a healthier tomorrow.',
       status: 'active'
     }

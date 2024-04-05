@@ -180,4 +180,67 @@ router.get("/summary", async (req, res) => {
   }
 });
 
+
+// Endpoint to get satisfaction percentage for all events
+router.get('/satisfaction', async (req, res) => {
+  try {
+    // Fetch all events and their emotions
+    const events = await Event.find({}).populate('emotions');
+
+    const satisfactionData = events.map(event => {
+      let totalScore = 0;
+      let maxScore = 0;
+
+      event.emotions.forEach(emotion => {
+        // Assign scores to emotions
+        let defaultFlag = false;
+        switch (emotion.detectedEmotion.toLowerCase()) {
+          case "happy":
+            totalScore += 6;
+            break;
+          case "surprised":
+            totalScore += 5;
+            break;
+          case "neutral":
+            totalScore += 4;
+            break;
+          case "disgusted":
+            totalScore += 3;
+            break;
+          case "fearful":
+            totalScore += 2;
+            break;
+          case "sad":
+            totalScore += 1;
+            break;
+          case "angry":
+            totalScore += 0;
+            break;
+          default:
+            defaultFlag = true;
+        }
+          if(!defaultFlag)
+            maxScore += 6;
+         // Assuming the highest score an emotion can get is 2
+      });
+
+      // Calculate the satisfaction percentage
+      let satisfactionPercentage = 0;
+      if (maxScore > 0) {
+        satisfactionPercentage = (totalScore / maxScore) * 100;
+      }
+
+      return {
+        eventId: event._id,
+        eventName: event.name,
+        satisfaction: satisfactionPercentage.toFixed(2) // Round to two decimal places
+      };
+    });
+
+    res.status(200).json(satisfactionData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
