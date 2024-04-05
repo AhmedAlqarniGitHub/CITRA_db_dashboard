@@ -32,6 +32,7 @@ router.post(
       await event.save();
       res.status(201).json({ message: "Event registered successfully", event });
     } catch (error) {
+      console.log("dfsdfdsf",error.message)
       res.status(400).json({ error: error.message });
     }
   }

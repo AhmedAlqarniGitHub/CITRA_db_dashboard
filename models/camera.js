@@ -6,11 +6,6 @@ const cameraSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
   supportedQuality: {
     type: String,
     required: true,
