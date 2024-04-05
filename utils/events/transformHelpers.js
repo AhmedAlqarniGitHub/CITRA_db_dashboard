@@ -39,7 +39,7 @@ function transformEventsBarChart(eventsBarChartAggregation) {
     Object.entries(item).forEach(([key, value]) => {
       if (key !== "event") {
         // Copy each emotion count to the new object, with proper capitalization
-        transformedItem[key.charAt(0).toUpperCase() + key.slice(1)] = value;
+        transformedItem[key] = value;
       }
     });
 
@@ -97,13 +97,13 @@ function getMonthName(monthNumber) {
 
 function transformHeatmapData(heatmapAggregation) {
   const categories = [
-    "Neutral",
-    "Fearful",
-    "Surprised",
-    "Disgusted",
-    "Sad",
-    "Happy",
-    "Angry",
+    "neutral",
+    "fearful",
+    "surprised",
+    "disgusted",
+    "sad",
+    "happy",
+    "angry",
   ];
   const series = heatmapAggregation.map((event) => {
     let data = categories.map((category) => {

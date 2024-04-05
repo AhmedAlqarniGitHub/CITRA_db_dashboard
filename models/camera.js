@@ -11,6 +11,11 @@ const cameraSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  model: { // Add this if it's needed
+    type: String,
+    required: true,
+    trim: true
+  },
   framesPerSecond: {
     type: Number,
     required: true

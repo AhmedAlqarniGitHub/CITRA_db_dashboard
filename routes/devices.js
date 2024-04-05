@@ -43,6 +43,16 @@ router.patch('/update/:cameraId', validateSchema(cameraValidationSchema), async 
   }
 });
 
+// In your camera router
+router.get('/all', async (req, res) => {
+  try {
+    const cameras = await Camera.find({});
+    res.status(200).json(cameras);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Add a new route for Camera Summary
 router.get("/summary", async (req, res) => {
   try {
