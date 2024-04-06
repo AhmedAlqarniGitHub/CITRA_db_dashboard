@@ -5,6 +5,7 @@ const userValidationSchema = {
     email: { type: 'string', format: 'email' },
     role: { type: 'string', enum: ['organizer', 'admin', 'attendee'] },
     description: { type: 'string' },
+    avatarUrl: { type: 'string' },
   },
   required: ['name', 'email', 'role'],
   additionalProperties: false
