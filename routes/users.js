@@ -32,7 +32,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
     // Generate and return token (implementation depends on chosen strategy, e.g., JWT)
-    res.status(200).json({ message: "Login successful", "info":{"name":user.name,"id":user.id,"role":user.role,"email":user.email} }); // Simplified for brevity
+    res.status(200).json({ message: "Login successful", "info":{"name":user.name,"id":user.id,"role":user.role,"email":user.email, "avatarUrl":user.avatarUrl} }); // Simplified for brevity
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
