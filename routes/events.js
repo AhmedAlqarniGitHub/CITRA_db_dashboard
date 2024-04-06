@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Event = require("../models/event");
+const User = require("../models/user");
 const validateSchema = require("../validatorMiddleware");
 const { eventValidationSchema } = require("../validation/schemas");
 const {
@@ -9,6 +10,7 @@ const {
   getEventsTimelineAggregation,
   getTotalEmotionsPerEventAggregation,
   getHeatmapAggregation,
+  getEventSummaryAggregation,
 } = require("../utils/events/aggregations");
 
 const {
@@ -22,6 +24,12 @@ const {
   transformEventsTimeline,
 } = require("../utils/events/transformHelpers");
 
+// Helper function to check if user is an organizer of the event
+async function isOrganizer(userId, eventId) {
+  const event = await Event.findById(eventId);
+  return event && event.organizer.equals(userId);
+}
+
 // Register Event
 router.post(
   "/register",
@@ -32,23 +40,25 @@ router.post(
       await event.save();
       res.status(201).json({ message: "Event registered successfully", event });
     } catch (error) {
-      console.log("dfsdfdsf",error.message)
+      console.log("dfsdfdsf", error.message);
       res.status(400).json({ error: error.message });
     }
   }
 );
 
-// Update Event
+// Update Event (role-based access control added)
 router.patch(
   "/update/:eventId",
   validateSchema(eventValidationSchema),
   async (req, res) => {
     const { eventId } = req.params;
+    const userId = req.user._id; // Assuming user ID is stored in req.user
     try {
-      const event = await Event.findByIdAndUpdate(eventId, req.body, {
-        new: true,
-      });
-
+      const user = await User.findById(userId);
+      if (user.role !== 'admin' && !(await isOrganizer(userId, eventId))) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      const event = await Event.findByIdAndUpdate(eventId, req.body, { new: true });
       res.status(200).json(event);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -56,16 +66,20 @@ router.patch(
   }
 );
 
-// Delete Event
-router.delete('/:eventId', async (req, res) => {
+// Delete Event (role-based access control added)
+router.delete("/:eventId", async (req, res) => {
   const { eventId } = req.params;
-
+  const userId = req.user._id; // Assuming user ID is stored in req.user
   try {
+    const user = await User.findById(userId);
+    if (user.role !== 'admin' && !(await isOrganizer(userId, eventId))) {
+      return res.status(403).json({ message: "Access denied" });
+    }
     const event = await Event.findByIdAndDelete(eventId);
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
-    res.status(200).json({ message: 'Event deleted successfully' });
+    res.status(200).json({ message: "Event deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -87,14 +101,20 @@ router.post("/emotions/:eventId", async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+// Get all events (role-based access control added)
 router.get("/all", async (req, res) => {
+  const userId = req.user._id; // Assuming user ID is stored in req.user
   try {
-    const events = await Event.find({});
+    const user = await User.findById(userId);
+    const query = user.role === 'admin' ? {} : { organizer: userId };
+    const events = await Event.find(query);
     res.status(200).json(events);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
+
 router.post("/emotions", async (req, res) => {
   const { eventId, cameraId, detectionTime, detectedEmotion } = req.body;
 
@@ -114,19 +134,32 @@ router.post("/emotions", async (req, res) => {
 // Full Aggregation Endpoint
 router.get("/charts", async (req, res) => {
   const year = new Date().getFullYear(); // Adjust as needed
+  const userId = req.user._id; // Assuming user ID is stored in req.user
 
   try {
-    
+    const user = await User.findById(userId);
+    const matchQuery = user && user.role === "admin" ? {} : { organizer: userId };
 
-    const completeEventDataAggregation = await getCompleteEventDataAggregation(year);
-    const eventsBarChartAggregation = await getEventsBarChartAggregation(year);
-    const eventsTimelineAggregation = await getEventsTimelineAggregation(year);
-    const totalEmotionsPerEventAggregation = await getTotalEmotionsPerEventAggregation(year);
-    const heatmapAggregation = await getHeatmapAggregation(year);
+    // Pass matchQuery to aggregation functions
+    const completeEventDataAggregation = await getCompleteEventDataAggregation(
+      year,
+      matchQuery
+    );
+    const eventsBarChartAggregation = await getEventsBarChartAggregation(
+      year,
+      matchQuery
+    );
+    const eventsTimelineAggregation = await getEventsTimelineAggregation(
+      year,
+      matchQuery
+    );
+    const totalEmotionsPerEventAggregation =
+      await getTotalEmotionsPerEventAggregation(year, matchQuery);
+    const heatmapAggregation = await getHeatmapAggregation(year, matchQuery);
 
     const completeEventData = transformCompleteEventData(
       completeEventDataAggregation
-    );    
+    );
     const eventsBarChart = transformEventsBarChart(eventsBarChartAggregation);
     const eventsTimeline = transformEventsTimeline(eventsTimelineAggregation);
     const totalEmotionsPerEvent = totalEmotionsPerEventAggregation;
@@ -135,7 +168,6 @@ router.get("/charts", async (req, res) => {
       completeEventDataAggregation,
       year
     );
-
 
     res.json({
       completeEventData,
@@ -150,49 +182,31 @@ router.get("/charts", async (req, res) => {
   }
 });
 
-// Aggregation for Event Summary
-async function getEventSummaryAggregation() {
-  const totalEvents = await Event.countDocuments();
-  const activeEvents = await Event.countDocuments({ status: 'active' });
-
-  // Assuming each event document has an 'emotions' array
-  const totalEmotions = await Event.aggregate([
-    { $unwind: "$emotions" },
-    { $group: { _id: null, count: { $sum: 1 } } },
-    { $project: { _id: 0, count: 1 } }
-  ]);
-
-  const emotionsCount = totalEmotions.length > 0 ? totalEmotions[0].count : 0;
-
-  return {
-    totalEvents,
-    activeEvents,
-    totalEmotions: emotionsCount
-  };
-}
 
 // Add a new route for Event Summary
 router.get("/summary", async (req, res) => {
   try {
-    const summaryData = await getEventSummaryAggregation();
+    // Obtain organizerId from request, e.g., from JWT token or request parameters
+    const organizerId = req.organizerId; // Modify this line as per your implementation
+    const summaryData = await getEventSummaryAggregation(organizerId);
     res.status(200).json(summaryData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-
 // Endpoint to get satisfaction percentage for all events
-router.get('/satisfaction', async (req, res) => {
+router.get("/satisfaction", async (req, res) => {
   try {
-    // Fetch all events and their emotions
-    const events = await Event.find({}).populate('emotions');
+    const organizerId = req.organizerId; // Modify this line as per your implementation
+    const matchQuery = createMatchQueryForSummary(organizerId);
+    const events = await Event.find(matchQuery).populate("emotions");
 
-    const satisfactionData = events.map(event => {
+    const satisfactionData = events.map((event) => {
       let totalScore = 0;
       let maxScore = 0;
 
-      event.emotions.forEach(emotion => {
+      event.emotions.forEach((emotion) => {
         // Assign scores to emotions
         let defaultFlag = false;
         switch (emotion.detectedEmotion.toLowerCase()) {
@@ -220,9 +234,8 @@ router.get('/satisfaction', async (req, res) => {
           default:
             defaultFlag = true;
         }
-          if(!defaultFlag)
-            maxScore += 6;
-         // Assuming the highest score an emotion can get is 2
+        if (!defaultFlag) maxScore += 6;
+        // Assuming the highest score an emotion can get is 2
       });
 
       // Calculate the satisfaction percentage
@@ -234,7 +247,7 @@ router.get('/satisfaction', async (req, res) => {
       return {
         eventId: event._id,
         eventName: event.name,
-        satisfaction: satisfactionPercentage.toFixed(2) // Round to two decimal places
+        satisfaction: satisfactionPercentage.toFixed(2), // Round to two decimal places
       };
     });
 

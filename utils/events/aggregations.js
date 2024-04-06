@@ -1,16 +1,24 @@
 // aggregations.js
 const Event = require("../../models/event");
 
-const getCompleteEventDataAggregation = async (year) => {
-  const completeEventDataAggregation = await Event.aggregate([
-    {
-      $match: {
-        startingDate: {
-          $gte: new Date(`${year}-01-01`),
-          $lte: new Date(`${year}-12-31`),
-        },
-      },
+// Utility function to create a match query
+const createMatchQuery = (year, organizerId) => {
+  const match = {
+    startingDate: {
+      $gte: new Date(`${year}-01-01`),
+      $lte: new Date(`${year}-12-31`),
     },
+  };
+  if (organizerId) {
+    match.organizer = organizerId;
+  }
+  return match;
+};
+
+const getCompleteEventDataAggregation = async (year, organizerId = null) => {
+  const matchQuery = createMatchQuery(year, organizerId);
+  const completeEventDataAggregation = await Event.aggregate([
+    { $match: matchQuery },
     { $unwind: "$emotions" },
     {
       $group: {
@@ -60,9 +68,10 @@ const getCompleteEventDataAggregation = async (year) => {
   return completeEventDataAggregation;
 };
 
-const getEventsBarChartAggregation = async (year) => {
-  // Aggregation for eventsBarChart with dynamic emotions
+const getEventsBarChartAggregation = async (year, organizerId = null) => {
+  const matchQuery = createMatchQuery(year, organizerId);
   const eventsBarChartAggregation = await Event.aggregate([
+    { $match: matchQuery },
     { $unwind: "$emotions" },
     {
       $group: {
@@ -99,27 +108,11 @@ const getEventsBarChartAggregation = async (year) => {
   return eventsBarChartAggregation;
 };
 
-const getEventsTimelineAggregation = async (year) => {
-  // Aggregation for eventsTimeline
+const getEventsTimelineAggregation = async (year, organizerId = null) => {
+  const matchQuery = createMatchQuery(year, organizerId);
   const eventsTimelineAggregation = await Event.aggregate([
-    {
-      $match: {
-        $or: [
-          {
-            startingDate: {
-              $gte: new Date(`${year}-01-01`),
-              $lte: new Date(`${year}-12-31`),
-            },
-          },
-          {
-            endingDate: {
-              $gte: new Date(`${year}-01-01`),
-              $lte: new Date(`${year}-12-31`),
-            },
-          },
-        ],
-      },
-    },
+    { $match: matchQuery },
+
     {
       $project: {
         title: "$name",
@@ -130,32 +123,37 @@ const getEventsTimelineAggregation = async (year) => {
   ]);
 
   return eventsTimelineAggregation;
-}
+};
 
-const getTotalEmotionsPerEventAggregation = async (year) => {
-
-    const totalEmotionsPerEventAggregation = await Event.aggregate([
-      { $unwind: "$emotions" },
-      {
-        $group: {
-          _id: "$name",
-          totalEmotions: { $sum: 1 },
-        },
+const getTotalEmotionsPerEventAggregation = async (
+  year,
+  organizerId = null
+) => {
+  const matchQuery = createMatchQuery(year, organizerId);
+  const totalEmotionsPerEventAggregation = await Event.aggregate([
+    { $match: matchQuery },
+    { $unwind: "$emotions" },
+    {
+      $group: {
+        _id: "$name",
+        totalEmotions: { $sum: 1 },
       },
-      {
-        $project: {
-          label: "$_id",
-          value: "$totalEmotions",
-          _id: 0,
-        },
+    },
+    {
+      $project: {
+        label: "$_id",
+        value: "$totalEmotions",
+        _id: 0,
       },
-    ]);
-    return totalEmotionsPerEventAggregation;
-}
+    },
+  ]);
+  return totalEmotionsPerEventAggregation;
+};
 
-const getHeatmapAggregation = async (year) => {
-  // Aggregation for heatmap data
+const getHeatmapAggregation = async (year, organizerId = null) => {
+  const matchQuery = createMatchQuery(year, organizerId);
   const heatmapAggregation = await Event.aggregate([
+    { $match: matchQuery },
     { $unwind: "$emotions" },
     {
       $group: {
@@ -181,6 +179,31 @@ const getHeatmapAggregation = async (year) => {
   return heatmapAggregation;
 };
 
+// Utility function to create a match query
+const createMatchQueryForSummary = (organizerId) => {
+  const match = {};
+  if (organizerId) {
+    match.organizer = organizerId;
+  }
+  return match;
+};
+
+// Aggregation for Event Summary
+async function getEventSummaryAggregation(organizerId = null) {
+  const matchQuery = createMatchQueryForSummary(organizerId);
+  const totalEvents = await Event.countDocuments(matchQuery);
+  const activeEvents = await Event.countDocuments({ ...matchQuery, status: "active" });
+
+  const totalEmotions = await Event.aggregate([
+    { $match: matchQuery },
+    { $unwind: "$emotions" },
+    { $group: { _id: null, count: { $sum: 1 } } },
+    { $project: { _id: 0, count: 1 } },
+  ]);
+
+  const emotionsCount = totalEmotions.length > 0 ? totalEmotions[0].count : 0;
+  return { totalEvents, activeEvents, totalEmotions: emotionsCount };
+}
 
 module.exports = {
   getCompleteEventDataAggregation,
@@ -188,4 +211,6 @@ module.exports = {
   getEventsTimelineAggregation,
   getTotalEmotionsPerEventAggregation,
   getHeatmapAggregation,
+  createMatchQueryForSummary,
+  getEventSummaryAggregation,
 };
