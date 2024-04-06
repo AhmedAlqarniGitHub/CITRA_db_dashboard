@@ -11,13 +11,12 @@ router.post(
   validateSchema(userValidationSchema),
   async (req, res) => {
     try {
-      console.log(req.body);
       req.body.password = "citra2024";
-      console.log(req.body);
       const user = new User(req.body);
       await user.save();
       res.status(201).json({ message: "User registered successfully", user });
     } catch (error) {
+      console.log("register: ", error)
       res.status(400).json({ error: error.message });
     }
   }
@@ -39,25 +38,13 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// // Update User Info
-// router.patch('/update/:userId', async (req, res) => {
-//   const { userId } = req.params;
-//   try {
-//     const user = await User.findByIdAndUpdate(userId, req.body, { new: true });
-//     res.status(200).json(user);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-
 // Get User Info
 router.get("/get-user/:userId", async (req, res) => {
   const { userId } = req.params;
-  console.log(userId);
   try {
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    if (!user || (user._id.toString() !== userId && user.role !== "admin")) {
+      return res.status(404).json({ error: "User not found or access denied" });
     }
     res.status(200).json(user);
   } catch (error) {
@@ -65,9 +52,14 @@ router.get("/get-user/:userId", async (req, res) => {
   }
 });
 
-// Retrieve all users
-router.get("/all", async (req, res) => {
+// Retrieve all users (Admin only)
+router.get("/all/:userId", async (req, res) => {
+  const {userId} = req.params; // Assuming user ID is stored in req.user
   try {
+    const requestingUser = await User.findById(userId);
+    if (requestingUser.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
     const users = await User.find({});
     res.status(200).json(users);
   } catch (error) {
@@ -77,29 +69,41 @@ router.get("/all", async (req, res) => {
 
 // Update User Info
 router.patch(
-  "/update/:userId",
+  "/update/:updatedUserId/:userId",
   validateSchema(userValidationSchema),
   async (req, res) => {
-    const { userId } = req.params;
+    const { updatedUserId, userId } = req.params;
     try {
-      const user = await User.findByIdAndUpdate(userId, req.body, {
-        new: true,
-      });
-      if (!user) {
+      const user = await User.findById(userId);
+      if (userId !== updatedUserId && user.role !== "admin") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      const updatedUser = await User.findByIdAndUpdate(
+        updatedUserId,
+        req.body,
+        {
+          new: true,
+        }
+      );
+      if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.status(200).json(user);
+      res.status(200).json(updatedUser);
     } catch (error) {
-      console.log(error);
+      console.log("user update error: ", error);
       res.status(400).json({ error: error.message });
     }
   }
 );
 
-// Delete a user
+// Delete a user (Admin only)
 router.delete("/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
+    const requestingUser = await User.findById(userId);
+    if (requestingUser.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
       return res.status(404).json({ message: "User not found" });
