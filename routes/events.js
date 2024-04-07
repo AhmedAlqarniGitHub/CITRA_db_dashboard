@@ -67,6 +67,7 @@ router.patch(
       const event = await Event.findByIdAndUpdate(eventId, req.body, { new: true });
       res.status(200).json(event);
     } catch (error) {
+      console.log(error);
       res.status(400).json({ error: error.message });
     }
   }

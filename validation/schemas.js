@@ -28,7 +28,7 @@ const eventValidationSchema = {
     }
   },
   
-  required: ['name', 'location', 'startingDate', 'endingDate', 'organizer', 'cameras'], // Include 'camera' as a required field
+  required: ['name', 'location', 'startingDate', 'endingDate', 'organizer'], // Include 'camera' as a required field
   additionalProperties: true
 };
 

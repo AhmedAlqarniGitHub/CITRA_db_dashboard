@@ -1,14 +1,46 @@
 const Event = require("../../models/event");
 
+function initializeEmotionCounts() {
+  const emotions = [
+    "happy",
+    "sad",
+    "neutral",
+    "angry",
+    "surprised",
+    "disgusted",
+    "fearful",
+  ];
+  let emotionCounts = {};
+  emotions.forEach((emotion) => {
+    emotionCounts[emotion] = 0;
+  });
+  return emotionCounts;
+}
+
 // Function to transform aggregated data into the required format
 function transformCompleteEventData(aggregatedData) {
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
   let dataByMonth = {};
 
   aggregatedData.forEach((item) => {
     // Directly access month and eventName
     const month = item.month;
     const eventName = item.eventName;
-
+    
     // Check if month is defined
     if (month === undefined) {
       console.error("Month is undefined for item:", item);
@@ -21,10 +53,11 @@ function transformCompleteEventData(aggregatedData) {
     }
 
     // Aggregate emotions for each event
-    dataByMonth[month][eventName] = item.emotions.reduce((acc, emotion) => {
+    dataByMonth[month][eventName] = initializeEmotionCounts();
+    dataByMonth[month][eventName] = Object.assign(dataByMonth[month][eventName], item.emotions.reduce((acc, emotion) => {
       acc[emotion.type] = emotion.count;
       return acc;
-    }, {});
+    }, {}))
   });
 
   return Object.values(dataByMonth);
