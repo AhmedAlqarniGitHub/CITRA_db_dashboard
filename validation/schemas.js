@@ -8,7 +8,7 @@ const userValidationSchema = {
     avatarUrl: { type: 'string' },
   },
   required: ['name', 'email', 'role'],
-  additionalProperties: false
+  additionalProperties: true
 };
 
   
@@ -20,12 +20,18 @@ const eventValidationSchema = {
     startingDate: { type: 'string', format: 'date-time' },
     endingDate: { type: 'string', format: 'date-time' },
     description: { type: 'string' },
-    organizer: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },// Assuming MongoDB ObjectId pattern
-    status:{ type: 'string' }
+    organizer: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' }, // Assuming MongoDB ObjectId pattern
+    status: { type: 'string' },
+    cameras: {
+      type: 'array',
+      items: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' } // ObjectId pattern
+    }
   },
-  required: ['name', 'location', 'startingDate', 'endingDate', 'organizer'],
-  additionalProperties: false
+  
+  required: ['name', 'location', 'startingDate', 'endingDate', 'organizer', 'cameras'], // Include 'camera' as a required field
+  additionalProperties: true
 };
+
   
 const cameraValidationSchema = {
   type: 'object',
@@ -34,10 +40,15 @@ const cameraValidationSchema = {
     model: { type: 'string' },  // Ensure this is marked as required
     supportedQuality: { type: 'string' },
     framesPerSecond: { type: 'number' },
+    status: { 
+      type: 'string',
+      enum: ['available', 'in-use', 'maintenance']  // Allowed values for status
+    },
   },
-  required: ['manufacturer', 'model', 'supportedQuality', 'framesPerSecond'],
-  additionalProperties: false
+  required: ['manufacturer', 'model', 'supportedQuality', 'framesPerSecond', 'status'],  // Include 'status' as a required field
+  additionalProperties: true
 };
+
 
 
   

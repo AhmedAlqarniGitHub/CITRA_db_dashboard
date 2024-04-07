@@ -19,10 +19,10 @@ async function getCamerasForOrganizer(organizerId) {
 // Add Camera
 router.post(
   "/add",
-  validateSchema(cameraValidationSchema),
+ validateSchema(cameraValidationSchema),
   async (req, res) => {
     try {
-      const userId = req.body.user.id; // Assuming user ID is stored in req.user
+      const userId = req.body.id; // Assuming user ID is stored in req.user
       const user = await User.findById(userId);
 
       if (user.role !== "admin") {
@@ -33,6 +33,7 @@ router.post(
       await camera.save();
       res.status(201).json({ message: "Camera added successfully", camera });
     } catch (error) {
+      console.log(error);
       res.status(400).json({ error: error.message });
     }
   }
@@ -84,27 +85,64 @@ router.patch(
   }
 );
 
-// Get All Cameras
+
+// Get All Cameras with Event Name
 router.get("/all/:userId", async (req, res) => {
   const { userId } = req.params; // Assuming user ID is stored in req.user
   try {
     const user = await User.findById(userId);
-    let cameras;
+    let matchCondition = {};
 
+    // Adjust match condition based on user role
     if (user.role === "admin") {
-      cameras = await Camera.find({});
+      // Admins get all cameras
+      matchCondition = {};
     } else if (user.role === "organizer") {
+      // Organizers get their cameras
       const cameraIds = await getCamerasForOrganizer(userId);
-      cameras = await Camera.find({ _id: { $in: cameraIds } });
+      matchCondition = { _id: { $in: cameraIds.map(id => mongoose.Types.ObjectId(id)) } };
     } else {
-      cameras = []; // Non-organizers and non-admins have no access
+      // Non-organizers and non-admins have no access
+      return res.status(403).json({ message: "Access Denied" });
     }
+
+    const cameras = await Camera.aggregate([
+      { $match: matchCondition },
+      {
+        $lookup: {
+          from: "events", // This should be the name of your events collection in MongoDB
+          localField: "eventId",
+          foreignField: "_id",
+          as: "eventDetails"
+        }
+      },
+      {
+        $unwind: {
+          path: "$eventDetails",
+          preserveNullAndEmptyArrays: true // Keep cameras that don't have an associated event
+        }
+      },
+      {
+        $project: {
+          manufacturer: 1,
+          model: 1,
+          supportedQuality: 1,
+          framesPerSecond: 1,
+          status: 1,
+          eventId: 1,
+          eventName: "$eventDetails.name" // Include event name in the result
+        }
+      }
+    ]);
+    console.log("temp",cameras)
 
     res.status(200).json(cameras);
   } catch (error) {
+    console.log("Error fetching cameras:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Get Available Cameras
 router.get("/available/:userId", async (req, res) => {

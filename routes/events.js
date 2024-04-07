@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Event = require("../models/event");
 const User = require("../models/user");
+const Camera = require("../models/camera");  // Assuming your Camera model is in the models directory
 const validateSchema = require("../validatorMiddleware");
 const { eventValidationSchema } = require("../validation/schemas");
 const {
@@ -30,22 +31,27 @@ async function isOrganizer(userId, eventId) {
   const event = await Event.findById(eventId);
   return event && event.organizer.equals(userId);
 }
+router.post("/register", validateSchema(eventValidationSchema), async (req, res) => {
+  try {
+    const event = new Event(req.body);
+    await event.save(); // Save the event first to get its ID
 
-// Register Event
-router.post(
-  "/register",
-  validateSchema(eventValidationSchema),
-  async (req, res) => {
-    try {
-      const event = new Event(req.body);
-      await event.save();
-      res.status(201).json({ message: "Event registered successfully", event });
-    } catch (error) {
-      console.log("dfsdfdsf", error.message);
-      res.status(400).json({ error: error.message });
+    // If cameras are associated with this event, update their status and eventId
+    if (req.body.cameras && req.body.cameras.length > 0) {
+      await Camera.updateMany(
+        { _id: { $in: req.body.cameras } }, // Filter for selected cameras
+        { $set: { status: "in-use", eventId: event._id } } // Update status and link eventId
+      );
     }
+
+    res.status(201).json({ message: "Event registered successfully", event });
+  } catch (error) {
+    console.log("Error registering event:", error.message);
+    res.status(400).json({ error: error.message });
   }
-);
+});
+
+
 
 // Update Event (role-based access control added)
 router.patch(
