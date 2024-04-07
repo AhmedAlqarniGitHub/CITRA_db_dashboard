@@ -1,14 +1,14 @@
 const express = require('express');
-const openai = require('../utils/openai.js'); // Path to your OpenAI client module
+const router = express.Router();
 
-const app = express();
-app.use(express.json());
+const openai= require('../utils/openai.js'); // Path to your OpenAI client module
 
-app.post('/generate-text', async (req, res) => {
+
+router.post('/generate-text', async (req, res) => {
   try {
     const prompt = req.body.prompt;
-    const response = await openai.createCompletion({
-      model: "text-davinci-002", // or another model
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo", // or another model
       prompt: prompt,
       max_tokens: 150,
     });
@@ -19,7 +19,6 @@ app.post('/generate-text', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+module.exports = router;
+
+

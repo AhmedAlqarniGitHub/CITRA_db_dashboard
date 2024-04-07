@@ -4,6 +4,7 @@ require('./db')
 const userRoutes = require('./routes/users');
 const eventRoutes = require('./routes/events');
 const cameraRoutes = require('./routes/devices');
+const actionsRoutes = require('./routes/openai.js');
 const generateRandomEmotion = require('./utils/utils_emotions.js')
 
 const app = express();
