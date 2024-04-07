@@ -16,13 +16,14 @@ app.use(cors());
 app.use('/users', userRoutes);
 app.use('/events', eventRoutes);
 app.use('/cameras', cameraRoutes);
+app.use('/actions', actionsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
 setTimeout(()=>{
-// generateRandomEmotion() ;
+  // generateRandomEmotion() ;
 
 },5000)
 module.exports=app;
