@@ -191,14 +191,12 @@ const createMatchQueryForSummary = async (organizerId) => {
     }
   } catch (err) {}
 
-  console.log(match);
   return match;
 };
 
 // Aggregation for Event Summary
 async function getEventSummaryAggregation(organizerId = null) {
   const matchQuery = await createMatchQueryForSummary(organizerId);
-  console.log("matchQuery", matchQuery);
   const totalEvents = await Event.countDocuments(matchQuery);
   const activeEvents = await Event.countDocuments({
     ...matchQuery,
@@ -211,8 +209,6 @@ async function getEventSummaryAggregation(organizerId = null) {
     { $group: { _id: null, count: { $sum: 1 } } },
     { $project: { _id: 0, count: 1 } },
   ]);
-
-  console.log(totalEmotions);
 
   const emotionsCount = totalEmotions.length > 0 ? totalEmotions[0].count : 0;
   return { totalEvents, activeEvents, totalEmotions: emotionsCount };

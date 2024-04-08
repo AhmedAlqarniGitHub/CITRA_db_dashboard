@@ -16,7 +16,6 @@ router.post(
       await user.save();
       res.status(201).json({ message: "User registered successfully", user });
     } catch (error) {
-      console.log("register: ", error)
       res.status(400).json({ error: error.message });
     }
   }
@@ -26,7 +25,6 @@ router.post(
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password )
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid email or password" });
