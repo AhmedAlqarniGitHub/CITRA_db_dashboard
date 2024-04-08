@@ -8,7 +8,7 @@ router.post('/generate-text', async (req, res) => {
   try {
     const prompt = req.body.prompt;
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // or another model
+      model: "gpt-4", // or another model
       messages: [{"role": "user", "content": prompt}],
 
     });
