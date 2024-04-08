@@ -33,7 +33,6 @@ router.post(
       await camera.save();
       res.status(201).json({ message: "Camera added successfully", camera });
     } catch (error) {
-      console.log(error);
       res.status(400).json({ error: error.message });
     }
   }
@@ -134,7 +133,6 @@ router.get("/all/:userId", async (req, res) => {
         }
       }
     ]);
-    console.log("temp",cameras)
 
     res.status(200).json(cameras);
   } catch (error) {

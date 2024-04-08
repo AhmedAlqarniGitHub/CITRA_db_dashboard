@@ -191,14 +191,12 @@ const createMatchQueryForSummary = async (organizerId) => {
     }
   } catch (err) {}
 
-  console.log(match);
   return match;
 };
 
 // Aggregation for Event Summary
 async function getEventSummaryAggregation(organizerId = null) {
   const matchQuery = await createMatchQueryForSummary(organizerId);
-  console.log("matchQuery", matchQuery);
   const totalEvents = await Event.countDocuments(matchQuery);
   const activeEvents = await Event.countDocuments({
     ...matchQuery,
@@ -212,11 +210,59 @@ async function getEventSummaryAggregation(organizerId = null) {
     { $project: { _id: 0, count: 1 } },
   ]);
 
-  console.log(totalEmotions);
-
   const emotionsCount = totalEmotions.length > 0 ? totalEmotions[0].count : 0;
   return { totalEvents, activeEvents, totalEmotions: emotionsCount };
 }
+
+const getEmotionsHeatmapAggregation = async (year, organizerId = null) => {
+  const matchQuery = await createMatchQuery(year, organizerId);
+  const emotionsHeatmapAggregation = await Event.aggregate([
+    { $match: matchQuery },
+    { $unwind: "$emotions" },
+    {
+      $group: {
+        _id: {
+          month: { $month: "$emotions.detectionTime" },
+          eventName: "$name",
+          dayPeriod: {
+            $floor: {
+              $divide: [{ $hour: "$emotions.detectionTime" }, 2],
+            },
+          },
+          emotion: "$emotions.detectedEmotion",
+        },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          month: "$_id.month",
+          eventName: "$_id.eventName",
+          dayPeriod: "$_id.dayPeriod",
+        },
+        emotions: {
+          $push: {
+            emotion: "$_id.emotion",
+            count: "$count",
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        month: "$_id.month",
+        eventName: "$_id.eventName",
+        dayPeriod: "$_id.dayPeriod",
+        emotions: 1,
+        _id: 0,
+      },
+    },
+  ]);
+  return emotionsHeatmapAggregation;
+};
+
+
 
 module.exports = {
   getCompleteEventDataAggregation,
@@ -226,4 +272,5 @@ module.exports = {
   getHeatmapAggregation,
   createMatchQueryForSummary,
   getEventSummaryAggregation,
+  getEmotionsHeatmapAggregation,
 };

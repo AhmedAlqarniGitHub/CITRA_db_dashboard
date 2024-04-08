@@ -249,6 +249,35 @@ function generateMonthlyLabels(year) {
   return months.map((month) => `${month}/01/${year}`);
 }
 
+function transformEmotionsHeatmapData(emotionsHeatmapAggregation) {
+  let heatmapData = {};
+
+  emotionsHeatmapAggregation.forEach((item) => {
+    const eventName = item.eventName;
+    const month = item.month;
+    const dayPeriod = item.dayPeriod;
+
+    if (!heatmapData[eventName]) {
+      heatmapData[eventName] = {};
+    }
+
+    if (!heatmapData[eventName][month]) {
+      heatmapData[eventName][month] = Array.from({ length: 12 }, () =>
+        initializeEmotionCounts()
+      );
+    }
+
+    item.emotions.forEach((emotion) => {
+      heatmapData[eventName][month][dayPeriod][emotion.emotion] = emotion.count;
+    });
+  });
+
+  return heatmapData;
+}
+
+
+
+
 module.exports = {
   transformCompleteEventData,
   generateMonthlyLabels,
@@ -258,4 +287,5 @@ module.exports = {
   transformHeatmapData,
   transformEventsBarChart,
   transformEventsTimeline,
+  transformEmotionsHeatmapData,
 };

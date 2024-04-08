@@ -13,6 +13,7 @@ const {
   getHeatmapAggregation,
   getEventSummaryAggregation,
   createMatchQueryForSummary,
+  getEmotionsHeatmapAggregation,
 } = require("../utils/events/aggregations");
 
 const {
@@ -24,6 +25,7 @@ const {
   transformHeatmapData,
   transformEventsBarChart,
   transformEventsTimeline,
+  transformEmotionsHeatmapData,
 } = require("../utils/events/transformHelpers");
 
 // Helper function to check if user is an organizer of the event
@@ -67,7 +69,6 @@ router.patch(
       const event = await Event.findByIdAndUpdate(eventId, req.body, { new: true });
       res.status(200).json(event);
     } catch (error) {
-      console.log(error);
       res.status(400).json({ error: error.message });
     }
   }
@@ -160,6 +161,10 @@ router.get("/charts/:userId", async (req, res) => {
     const totalEmotionsPerEventAggregation =
       await getTotalEmotionsPerEventAggregation(year, userId);
     const heatmapAggregation = await getHeatmapAggregation(year, userId);
+    const emotionsHeatmapAggregation = await getEmotionsHeatmapAggregation(
+      year,
+      userId
+    );
 
     const completeEventData = transformCompleteEventData(
       completeEventDataAggregation
@@ -173,6 +178,11 @@ router.get("/charts/:userId", async (req, res) => {
       year
     );
 
+    const emotionCorrelationHeatmapData = transformEmotionsHeatmapData(
+      emotionsHeatmapAggregation
+    );
+
+
     res.json({
       completeEventData,
       eventsBarChart,
@@ -180,6 +190,7 @@ router.get("/charts/:userId", async (req, res) => {
       totalEmotionsPerEvent,
       heatmapData,
       appWebsiteVisitsData,
+      emotionCorrelationHeatmapData,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -256,7 +267,6 @@ router.get("/satisfaction/:userId", async (req, res) => {
 
     res.status(200).json(satisfactionData);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message });
   }
 });
