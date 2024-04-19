@@ -198,6 +198,31 @@ router.get("/charts/:userId", async (req, res) => {
 });
 
 
+router.get("/chatgpt/:userId", async (req, res) => {
+  const year = new Date().getFullYear(); // Adjust as needed
+  const {userId} = req.params; // Assuming user ID is stored in req.user
+
+  try {
+    const user = await User.findById(userId);
+    // Pass matchQuery to aggregation functions
+    const completeEventDataAggregation = await getCompleteEventDataAggregation(
+      year,
+      userId
+    );
+
+    const completeEventData = transformCompleteEventData(
+      completeEventDataAggregation
+    );
+
+    res.json(
+      completeEventData,
+    );
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Add a new route for Event Summary
 router.get("/summary/:userId", async (req, res) => {
   try {
