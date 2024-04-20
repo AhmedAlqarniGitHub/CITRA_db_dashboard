@@ -30,7 +30,8 @@ const cameraSchema = new mongoose.Schema(
     eventId: {  // Add this field to link a camera with an event
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Event',  // Reference to the Event model
-    }
+      default: null 
+       }
     // Additional camera-specific fields can be added here
   },
   {

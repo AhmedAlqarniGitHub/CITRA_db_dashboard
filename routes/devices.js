@@ -59,30 +59,35 @@ router.delete("/remove/:cameraId/:userId", async (req, res) => {
 });
 
 // Update Camera (Admin only)
-router.patch(
-  "/update/:cameraId/:userId",
-  validateSchema(cameraValidationSchema),
-  async (req, res) => {
-    const { cameraId, userId } = req.params;
-    const user = await User.findById(userId);
+router.patch("/update/:cameraId/:userId", validateSchema(cameraValidationSchema), async (req, res) => {
+  const { cameraId, userId } = req.params;
+  const user = await User.findById(userId);
 
-    if (user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-
-    try {
-      const camera = await Camera.findByIdAndUpdate(cameraId, req.body, {
-        new: true,
-      });
-      if (!camera) {
-        return res.status(404).json({ message: "Camera not found" });
-      }
-      res.status(200).json({ message: "Camera updated successfully", camera });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+  if (user.role !== "admin") {
+    return res.status(403).json({ message: "Access denied" });
   }
-);
+
+  const updateData = { ...req.body };
+  
+  // Explicitly check if eventId should be unset
+  if (updateData.eventId === 'none' || updateData.eventId === '') {
+    updateData.eventId = null; // Set eventId to null to remove it
+  }
+
+
+  try {
+    const camera = await Camera.findByIdAndUpdate(cameraId, updateData, { new: true, omitUndefined: true });
+    if (!camera) {
+      return res.status(404).json({ message: "Camera not found" });
+    }
+    res.status(200).json({ message: "Camera updated successfully", camera });
+  } catch (error) {
+    console.log("Error: " + error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+
 
 
 // Get All Cameras with Event Name
