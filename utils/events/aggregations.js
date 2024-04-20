@@ -35,6 +35,7 @@ const getCompleteEventDataAggregation = async (year, organizerId = null) => {
             },
           },
           eventName: "$name",
+          eventId: "$_id",
           emotion: "$emotions.detectedEmotion",
         },
         count: { $sum: 1 },
@@ -45,6 +46,7 @@ const getCompleteEventDataAggregation = async (year, organizerId = null) => {
         _id: {
           month: "$_id.month",
           eventName: "$_id.eventName",
+          eventId: "$_id.eventId",
         },
         emotions: {
           $push: {
@@ -55,16 +57,21 @@ const getCompleteEventDataAggregation = async (year, organizerId = null) => {
       },
     },
     {
+      $sort: { "_id.eventId": 1 }, // Sorting by eventId
+    },
+    {
       $project: {
         _id: 0,
         month: "$_id.month",
         eventName: "$_id.eventName",
+        eventId: "$_id.eventId",
         emotions: 1,
       },
     },
   ]);
   return completeEventDataAggregation;
 };
+
 
 const getEventsBarChartAggregation = async (year, organizerId = null) => {
   const matchQuery = await createMatchQuery(year, organizerId);
@@ -102,15 +109,28 @@ const getEventsBarChartAggregation = async (year, organizerId = null) => {
         newRoot: { $mergeObjects: [{ event: "$event" }, "$emotions"] },
       },
     },
+    {
+      $sort: { event: 1 } // Sorting alphabetically by event name
+    }
   ]);
-  return eventsBarChartAggregation;
+  const sortedEventsData = eventsBarChartAggregation.map(event => {
+    const { event: eventName, ...emotions } = event; // Destructure to separate event name and emotions
+    const sortedEmotions = Object.keys(emotions).sort().reduce((obj, key) => {
+      obj[key] = emotions[key]; // Reconstruct emotions object in sorted order
+      return obj;
+    }, {});
+    return { event: eventName, ...sortedEmotions }; // Combine event name with sorted emotions and return
+  });
+  return sortedEventsData;
 };
+
+
 
 const getEventsTimelineAggregation = async (year, organizerId = null) => {
   const matchQuery = await createMatchQuery(year, organizerId);
   const eventsTimelineAggregation = await Event.aggregate([
     { $match: matchQuery },
-
+    { $sort: { _id: 1 } }, // Sorting by event ID
     {
       $project: {
         title: "$name",
@@ -123,10 +143,8 @@ const getEventsTimelineAggregation = async (year, organizerId = null) => {
   return eventsTimelineAggregation;
 };
 
-const getTotalEmotionsPerEventAggregation = async (
-  year,
-  organizerId = null
-) => {
+
+const getTotalEmotionsPerEventAggregation = async (year, organizerId = null) => {
   const matchQuery = await createMatchQuery(year, organizerId);
   const totalEmotionsPerEventAggregation = await Event.aggregate([
     { $match: matchQuery },
@@ -144,13 +162,19 @@ const getTotalEmotionsPerEventAggregation = async (
         _id: 0,
       },
     },
+    {
+      $sort: { label: 1 } // Sorting by label in ascending order
+    }
   ]);
+
+  console.log(totalEmotionsPerEventAggregation);
   return totalEmotionsPerEventAggregation;
 };
 
+
 const getHeatmapAggregation = async (year, organizerId = null) => {
   const matchQuery = await createMatchQuery(year, organizerId);
-  const heatmapAggregation = await Event.aggregate([
+  let heatmapAggregation = await Event.aggregate([
     { $match: matchQuery },
     { $unwind: "$emotions" },
     {
@@ -174,8 +198,15 @@ const getHeatmapAggregation = async (year, organizerId = null) => {
       },
     },
   ]);
+
+  // Sorting the results by eventName (_id) before returning
+  heatmapAggregation = heatmapAggregation.sort((a, b) => a._id.localeCompare(b._id));
+
   return heatmapAggregation;
 };
+
+
+
 
 // Utility function to create a match query
 const createMatchQueryForSummary = async (organizerId) => {
@@ -210,8 +241,22 @@ async function getEventSummaryAggregation(organizerId = null) {
     { $project: { _id: 0, count: 1 } },
   ]);
 
+  // Fetching and sorting event details
+  const eventDetails = await Event.aggregate([
+    { $match: matchQuery },
+    {
+      $project: {
+        _id: 1,  // Keeping _id for sorting purposes
+        name: 1,
+        startingDate: 1,
+        status: 1
+      }
+    },
+    { $sort: { _id: 1 } }  // Sorting by event ID
+  ]);
+
   const emotionsCount = totalEmotions.length > 0 ? totalEmotions[0].count : 0;
-  return { totalEvents, activeEvents, totalEmotions: emotionsCount };
+  return { totalEvents, activeEvents, totalEmotions: emotionsCount, eventDetails };
 }
 
 const getEmotionsHeatmapAggregation = async (year, organizerId = null) => {
@@ -258,9 +303,13 @@ const getEmotionsHeatmapAggregation = async (year, organizerId = null) => {
         _id: 0,
       },
     },
+    {
+      $sort: { "month": 1, "eventName": 1, "dayPeriod": 1 }  // Sorting by month, then eventName, then dayPeriod
+    }
   ]);
   return emotionsHeatmapAggregation;
 };
+
 
 
 
