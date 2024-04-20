@@ -8,7 +8,7 @@ const { userValidationSchema } = require("../validation/schemas");
 // Register User
 router.post(
   "/register",
-  validateSchema(userValidationSchema),
+ validateSchema(userValidationSchema),
   async (req, res) => {
     try {
       req.body.password = "citra2024";
@@ -94,12 +94,11 @@ router.patch(
   }
 );
 
-// Delete a user (Admin only)
-router.delete("/:userId", async (req, res) => {
-  const { userId } = req.params;
+router.delete("/:userId/:adminId", async (req, res) => {
+  const { userId, adminId } = req.params;
   try {
-    const requestingUser = await User.findById(userId);
-    if (requestingUser.role !== "admin") {
+    const adminUser = await User.findById(adminId);
+    if (adminUser.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }
     const deletedUser = await User.findByIdAndDelete(userId);
@@ -111,5 +110,6 @@ router.delete("/:userId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 module.exports = router;
