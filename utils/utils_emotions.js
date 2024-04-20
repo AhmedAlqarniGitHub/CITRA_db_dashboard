@@ -1,17 +1,19 @@
 const Event = require('../models/event'); // Adjust path as needed
 const Camera = require('../models/camera'); // Adjust path as needed
 
- async function generateRandomEmotion() {
+async function generateRandomEmotion() {
   try {
     // Retrieve all active events
     const activeEvents = await Event.find({ status: 'active' });
     // Retrieve all camera IDs
     const cameras = await Camera.find({});
     const cameraIds = cameras.map(camera => camera._id);
-console.log("activeEvents:: ",activeEvents)
+
     activeEvents.forEach(async (event) => {
       const emotions = [];
-      for (let i = 0; i < 100; i++) {
+      const numberOfEmotions = Math.floor(Math.random() * 301); // Generate between 0 and 300 emotions
+
+      for (let i = 0; i < numberOfEmotions; i++) {
         const emotionTypes = ['happy', 'sad', 'neutral', 'angry', 'surprised', 'disgusted', 'fearful'];
         const detectedEmotion = emotionTypes[Math.floor(Math.random() * emotionTypes.length)];
         const detectionTime = new Date(+event.startingDate + Math.random() * (event.endingDate - event.startingDate));
