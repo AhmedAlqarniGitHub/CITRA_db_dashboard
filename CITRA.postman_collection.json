@@ -21,7 +21,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/users/register",
+					"raw": "https://citra-api-qp4p25cifq-ww.a.run.app/users/register",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -41,7 +41,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/users/get-user/65cfabfb8a8969840d31b974",
+					"raw": "https://citra-api-qp4p25cifq-ww.a.run.app/users/get-user/65cfabfb8a8969840d31b974",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -95,7 +95,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/events/update/65d259f7d94d1001da2bf3d9",
+					"raw": "https://citra-api-qp4p25cifq-ww.a.run.app/events/update/65d259f7d94d1001da2bf3d9",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -133,7 +133,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/cameras/add",
+					"raw": "https://citra-api-qp4p25cifq-ww.a.run.app/cameras/add",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -170,7 +170,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/cameras/update/65d262ede3f06e8b1493daf1",
+					"raw": "https://citra-api-qp4p25cifq-ww.a.run.app/cameras/update/65d262ede3f06e8b1493daf1",
 					"protocol": "http",
 					"host": [
 						"localhost"

@@ -104,7 +104,7 @@ router.get("/all/:userId", async (req, res) => {
     } else if (user.role === "organizer") {
       // Organizers get their cameras
       const cameraIds = await getCamerasForOrganizer(userId);
-      matchCondition = { _id: { $in: cameraIds.map(id => mongoose.Types.ObjectId(id)) } };
+      matchCondition = { _id: { $in: cameraIds.map(id => new mongoose.Types.ObjectId(id)) } };
     } else {
       // Non-organizers and non-admins have no access
       return res.status(403).json({ message: "Access Denied" });

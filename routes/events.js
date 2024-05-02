@@ -296,4 +296,38 @@ router.get("/satisfaction/:userId", async (req, res) => {
   }
 });
 
+router.get("/events_with_cameras", async (req, res) => {
+  try {
+    const eventsWithCameras = await Event.find()
+      .populate("cameras") // Assuming 'cameras' field in event schema holds references to Camera documents
+      .select(
+        "name location description cameras"
+      );
+
+    const eventsData = eventsWithCameras.map((event) => ({
+      eventId: event._id,
+      name: event.name,
+      location: event.location,
+      description: event.description,
+      cameras: event.cameras.map((camera) => ({
+        cameraId: camera._id,
+        manufacturer: camera.manufacturer,
+        model: camera.model,
+        supportedQuality: camera.supportedQuality,
+        status: camera.status,
+      })),
+    }));
+
+    res.json(eventsData);
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Failed to fetch events with cameras",
+        error: error.message,
+      });
+  }
+});
+
+
 module.exports = router;
